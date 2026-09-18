@@ -1,0 +1,27 @@
+# =====================================================================
+# Reescritura de URLs - TodoCamisetas API
+# Examen Transversal Final | Desarrollo Backend IF201IINF
+# =====================================================================
+# Redirige toda peticion que no corresponda a un archivo o directorio
+# real hacia index.php, que actua como front controller y unico punto
+# de entrada de la aplicacion.
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Si la ruta solicitada es un archivo existente, se sirve directamente.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Si la ruta solicitada es un directorio existente, se sirve directamente.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    # Cualquier otra ruta se entrega a index.php.
+    RewriteRule ^ index.php [QSA,L]
+
+    # Apache elimina la cabecera Authorization por defecto; aqui se conserva
+    # para dejar preparada una futura autenticacion por token.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Impide que se listen los archivos del directorio si falta index.php.
+Options -Indexes
