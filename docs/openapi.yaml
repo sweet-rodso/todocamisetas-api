@@ -1,0 +1,1060 @@
+openapi: 3.0.3
+
+info:
+  title: TodoCamisetas API
+  description: >
+    API RESTful desarrollada en PHP puro (sin frameworks) para el sistema de
+    gestion de inventario y relacion con clientes B2B de TodoCamisetas,
+    proveedor mayorista de camisetas de futbol con sede en Santiago, Chile.
+
+    Incluye CRUD completo de camisetas, clientes y tallas, la relacion muchos
+    a muchos entre camisetas y tallas, y el calculo dinamico del precio final
+    segun el cliente que consulta.
+
+    Reglas de precio final (por orden de precedencia):
+      1. Cliente Preferencial y camiseta con precio_oferta definido -> precio_final = precio_oferta
+      2. Cliente con porcentaje_oferta mayor a cero -> precio_final = precio - (precio * porcentaje / 100)
+      3. Cualquier otro caso -> precio_final = precio base
+  version: "1.0.0"
+  contact:
+    name: Rodrigo Alexis Soto Cifuentes
+    email: rodalsoto@gmail.com
+
+servers:
+  - url: http://localhost/todocamisetas-api/public
+    description: Servidor local XAMPP (Apache + MySQL)
+
+tags:
+  - name: Camisetas
+    description: CRUD del inventario de productos
+  - name: Clientes
+    description: CRUD de tiendas minoristas B2B
+  - name: Tallas
+    description: Catalogo de tallas
+  - name: Camiseta-Tallas
+    description: Relacion muchos a muchos entre camisetas y tallas
+
+paths:
+
+  # ==================================================================
+  # CAMISETAS
+  # ==================================================================
+  /api/camisetas:
+    get:
+      tags: [Camisetas]
+      summary: Listar camisetas
+      description: >
+        Devuelve el inventario paginado. Si se envia cliente_id, cada camiseta
+        incluye el precio_final que le corresponde a ese cliente.
+      parameters:
+        - name: club
+          in: query
+          required: false
+          description: Filtra por club exacto
+          schema: { type: string, example: Colo Colo }
+        - name: tipo
+          in: query
+          required: false
+          description: Filtra por tipo de modelo
+          schema: { type: string, example: Local }
+        - name: cliente_id
+          in: query
+          required: false
+          description: Filtra por cliente asignado y calcula el precio final para el
+          schema: { type: integer, example: 1 }
+        - name: pagina
+          in: query
+          required: false
+          schema: { type: integer, default: 1, minimum: 1 }
+        - name: por_pagina
+          in: query
+          required: false
+          schema: { type: integer, default: 10, maximum: 50 }
+      responses:
+        "200":
+          description: Listado obtenido correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetaListResponse" }
+        "400":
+          description: El parametro cliente_id no es un entero positivo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: El cliente indicado en cliente_id no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "500":
+          description: Error interno o de base de datos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    post:
+      tags: [Camisetas]
+      summary: Crear una camiseta
+      description: >
+        Crea un producto. Opcionalmente admite el arreglo "tallas" para
+        asignar tallas y stock en la misma transaccion.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CamisetaInput" }
+            example:
+              titulo: "Camiseta Local 2025 - Audax Italiano"
+              club: "Audax Italiano"
+              pais: "Chile"
+              tipo: "Local"
+              color: "Verde y Blanco"
+              precio: 39000
+              precio_oferta: 33000
+              detalles: "Modelo oficial temporada 2025"
+              codigo_producto: "AUD2025L"
+              cliente_id: 2
+              tallas:
+                - { talla_id: 2, stock: 20 }
+                - { talla_id: 3, stock: 15 }
+      responses:
+        "201":
+          description: Camiseta creada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetaResponse" }
+        "409":
+          description: El codigo_producto ya esta en uso
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Faltan campos obligatorios o los datos son invalidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+        "400":
+          description: El cuerpo enviado no es un JSON valido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /api/camisetas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador de la camiseta
+        schema: { type: integer, example: 1 }
+
+    get:
+      tags: [Camisetas]
+      summary: Obtener una camiseta con su precio final
+      description: >
+        Devuelve la camiseta con sus tallas asociadas. Si se envia cliente_id,
+        el campo precio_final se calcula segun las reglas de oferta y se agrega
+        el bloque precio_detalle explicando el origen del precio.
+      parameters:
+        - name: cliente_id
+          in: query
+          required: false
+          description: Cliente que realiza la consulta
+          schema: { type: integer, example: 1 }
+      responses:
+        "200":
+          description: Camiseta encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetaResponse" }
+              examples:
+                clientePreferencial:
+                  summary: Cliente Preferencial con oferta vigente
+                  value:
+                    status: success
+                    code: 200
+                    data:
+                      id: 1
+                      titulo: "Camiseta Local 2025 - Seleccion Chilena"
+                      precio: 45000
+                      precio_oferta: 38000
+                      precio_final: 38000
+                      precio_detalle:
+                        tipo_cliente: Preferencial
+                        cliente_id: 1
+                        origen: precio_oferta
+                        descuento: 7000
+                clienteRegular:
+                  summary: Cliente Regular sin descuento
+                  value:
+                    status: success
+                    code: 200
+                    data:
+                      id: 1
+                      titulo: "Camiseta Local 2025 - Seleccion Chilena"
+                      precio: 45000
+                      precio_oferta: 38000
+                      precio_final: 45000
+                      precio_detalle:
+                        tipo_cliente: Regular
+                        cliente_id: 2
+                        origen: precio_base
+                        descuento: 0
+        "400":
+          description: El id o el cliente_id no son enteros positivos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: La camiseta o el cliente indicado no existen
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    put:
+      tags: [Camisetas]
+      summary: Actualizar por completo una camiseta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CamisetaInput" }
+      responses:
+        "200":
+          description: Camiseta actualizada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetaResponse" }
+        "400":
+          description: Cuerpo vacio o JSON invalido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: La camiseta no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: El codigo_producto ya pertenece a otra camiseta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Datos invalidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+    patch:
+      tags: [Camisetas]
+      summary: Actualizar parcialmente una camiseta
+      description: Solo se modifican los campos presentes en el cuerpo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CamisetaPatchInput" }
+            example:
+              precio_oferta: 35000
+      responses:
+        "200":
+          description: Camiseta actualizada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetaResponse" }
+        "404":
+          description: La camiseta no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Datos invalidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+    delete:
+      tags: [Camisetas]
+      summary: Eliminar una camiseta
+      description: >
+        Elimina el producto. Sus filas en camiseta_tallas se borran
+        automaticamente por el ON DELETE CASCADE.
+      responses:
+        "200":
+          description: Camiseta eliminada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessageResponse" }
+        "400":
+          description: El id no es un entero positivo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: La camiseta no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ==================================================================
+  # RELACION CAMISETA - TALLAS (muchos a muchos)
+  # ==================================================================
+  /api/camisetas/{id}/tallas:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador de la camiseta
+        schema: { type: integer, example: 1 }
+
+    get:
+      tags: [Camiseta-Tallas]
+      summary: Listar las tallas de una camiseta
+      responses:
+        "200":
+          description: Tallas obtenidas correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaAsignadaListResponse" }
+        "404":
+          description: La camiseta no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    post:
+      tags: [Camiseta-Tallas]
+      summary: Asignar una talla a una camiseta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [talla_id]
+              properties:
+                talla_id: { type: integer, example: 5 }
+                stock:    { type: integer, example: 25, default: 0 }
+      responses:
+        "201":
+          description: Talla asignada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaAsignadaResponse" }
+        "404":
+          description: La camiseta o la talla no existen
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: Esa talla ya esta asignada a la camiseta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Falta talla_id o el stock es invalido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+  /api/camisetas/{id}/tallas/{tallaId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador de la camiseta
+        schema: { type: integer, example: 1 }
+      - name: tallaId
+        in: path
+        required: true
+        description: Identificador de la talla
+        schema: { type: integer, example: 2 }
+
+    put:
+      tags: [Camiseta-Tallas]
+      summary: Actualizar el stock de una talla en una camiseta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stock]
+              properties:
+                stock: { type: integer, example: 40 }
+      responses:
+        "200":
+          description: Stock actualizado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaAsignadaResponse" }
+        "404":
+          description: La camiseta no existe o no tiene asignada esa talla
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Falta el stock o su valor es invalido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+    patch:
+      tags: [Camiseta-Tallas]
+      summary: Actualizar parcialmente el stock de una talla
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stock: { type: integer, example: 12 }
+      responses:
+        "200":
+          description: Stock actualizado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaAsignadaResponse" }
+        "404":
+          description: La camiseta no existe o no tiene asignada esa talla
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    delete:
+      tags: [Camiseta-Tallas]
+      summary: Quitar una talla de una camiseta
+      responses:
+        "200":
+          description: Talla desasignada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessageResponse" }
+        "404":
+          description: La camiseta no existe o no tiene asignada esa talla
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ==================================================================
+  # CLIENTES
+  # ==================================================================
+  /api/clientes:
+    get:
+      tags: [Clientes]
+      summary: Listar clientes B2B
+      parameters:
+        - name: categoria
+          in: query
+          required: false
+          description: Filtra por categoria (tipo) de cliente
+          schema: { type: string, enum: [Regular, Preferencial] }
+      responses:
+        "200":
+          description: Listado obtenido correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteListResponse" }
+        "400":
+          description: El valor de categoria no es valido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    post:
+      tags: [Clientes]
+      summary: Crear un cliente B2B
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClienteInput" }
+            example:
+              nombre_comercial: "Deportes Sur"
+              rut: "79.456.123-7"
+              direccion: "Puerto Montt, Los Lagos"
+              categoria: "Preferencial"
+              contacto_nombre: "Paula Mendez"
+              contacto_email: "compras@deportessur.cl"
+              porcentaje_oferta: 12
+      responses:
+        "201":
+          description: Cliente creado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "409":
+          description: El RUT ya esta registrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Faltan campos obligatorios, el correo es invalido o el porcentaje esta fuera de rango
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+  /api/clientes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+
+    get:
+      tags: [Clientes]
+      summary: Obtener un cliente
+      responses:
+        "200":
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "400":
+          description: El id no es un entero positivo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: El cliente no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    put:
+      tags: [Clientes]
+      summary: Actualizar por completo un cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClienteInput" }
+      responses:
+        "200":
+          description: Cliente actualizado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "404":
+          description: El cliente no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: El RUT ya pertenece a otro cliente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Datos invalidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+    patch:
+      tags: [Clientes]
+      summary: Actualizar parcialmente un cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClientePatchInput" }
+            example:
+              porcentaje_oferta: 15
+      responses:
+        "200":
+          description: Cliente actualizado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClienteResponse" }
+        "404":
+          description: El cliente no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Datos invalidos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+    delete:
+      tags: [Clientes]
+      summary: Eliminar un cliente
+      description: >
+        Solo es posible si el cliente no tiene camisetas asignadas. En caso
+        contrario se devuelve 409 indicando cuantos productos lo impiden.
+      responses:
+        "200":
+          description: Cliente eliminado correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MessageResponse" }
+        "404":
+          description: El cliente no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: El cliente tiene camisetas asignadas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ErrorResponse"
+                  - type: object
+                    properties:
+                      camisetas_asociadas: { type: integer, example: 3 }
+
+  /api/clientes/{id}/camisetas:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+
+    get:
+      tags: [Clientes]
+      summary: Listar las camisetas de un cliente con su precio final
+      description: >
+        Devuelve las camisetas asignadas al cliente aplicando las reglas de
+        precio que le corresponden segun su categoria.
+      parameters:
+        - name: pagina
+          in: query
+          required: false
+          schema: { type: integer, default: 1 }
+        - name: por_pagina
+          in: query
+          required: false
+          schema: { type: integer, default: 10, maximum: 50 }
+      responses:
+        "200":
+          description: Listado obtenido correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CamisetasDeClienteResponse" }
+        "404":
+          description: El cliente no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  # ==================================================================
+  # TALLAS (catalogo)
+  # ==================================================================
+  /api/tallas:
+    get:
+      tags: [Tallas]
+      summary: Listar el catalogo de tallas
+      responses:
+        "200":
+          description: Catalogo obtenido correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaListResponse" }
+
+    post:
+      tags: [Tallas]
+      summary: Crear una talla
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TallaInput" }
+            example:
+              codigo: "XS"
+              descripcion: "Extra Small"
+      responses:
+        "201":
+          description: Talla creada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaResponse" }
+        "409":
+          description: Ya existe una talla con ese codigo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "422":
+          description: Faltan campos obligatorios o superan el largo permitido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidationErrorResponse" }
+
+  /api/tallas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+
+    get:
+      tags: [Tallas]
+      summary: Obtener una talla
+      responses:
+        "200":
+          description: Talla encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaResponse" }
+        "404":
+          description: La talla no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    put:
+      tags: [Tallas]
+      summary: Actualizar por completo una talla
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TallaInput" }
+      responses:
+        "200":
+          description: Talla actualizada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaResponse" }
+        "404":
+          description: La talla no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: Ya existe otra talla con ese codigo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    patch:
+      tags: [Tallas]
+      summary: Actualizar parcialmente una talla
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codigo:      { type: string, maxLength: 10 }
+                descripcion: { type: string, maxLength: 80 }
+      responses:
+        "200":
+          description: Talla actualizada correctamente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TallaResponse" }
+        "404":
+          description: La talla no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+    delete:
+      tags: [Tallas]
+      summary: Eliminar una talla
+      description: >
+        Al eliminarla se borran en cascada todas sus asignaciones a camisetas.
+        La respuesta informa cuantas asignaciones se liberaron.
+      responses:
+        "200":
+          description: Talla eliminada correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/MessageResponse"
+                  - type: object
+                    properties:
+                      asignaciones_liberadas: { type: integer, example: 4 }
+        "404":
+          description: La talla no existe
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+components:
+  schemas:
+
+    # ---------------- Entidades ----------------
+    TallaAsignada:
+      type: object
+      properties:
+        talla_id:       { type: integer, example: 2 }
+        codigo:         { type: string,  example: M }
+        descripcion:    { type: string,  example: Medium }
+        stock:          { type: integer, example: 35 }
+        creado_en:      { type: string,  format: date-time }
+        actualizado_en: { type: string,  format: date-time }
+
+    Talla:
+      type: object
+      properties:
+        id:             { type: integer, example: 1 }
+        codigo:         { type: string,  example: S }
+        descripcion:    { type: string,  example: Small }
+        creado_en:      { type: string,  format: date-time }
+        actualizado_en: { type: string,  format: date-time }
+
+    TallaInput:
+      type: object
+      required: [codigo, descripcion]
+      properties:
+        codigo:      { type: string, maxLength: 10, example: XS }
+        descripcion: { type: string, maxLength: 80, example: Extra Small }
+
+    Camiseta:
+      type: object
+      properties:
+        id:              { type: integer, example: 1 }
+        titulo:          { type: string,  example: "Camiseta Local 2025 - Seleccion Chilena" }
+        club:            { type: string,  example: "Seleccion Chilena" }
+        pais:            { type: string,  example: Chile }
+        tipo:            { type: string,  example: Local }
+        color:           { type: string,  example: "Rojo y Azul" }
+        precio:          { type: number,  format: float, example: 45000 }
+        precio_oferta:   { type: number,  format: float, nullable: true, example: 38000 }
+        precio_final:    { type: number,  format: float, example: 38000 }
+        detalles:        { type: string,  nullable: true }
+        codigo_producto: { type: string,  example: SCL2025L }
+        cliente:
+          type: object
+          nullable: true
+          properties:
+            id:        { type: integer, example: 1 }
+            nombre:    { type: string,  example: 90minutos }
+            categoria: { type: string,  example: Preferencial }
+        tallas:
+          type: array
+          items: { $ref: "#/components/schemas/TallaAsignada" }
+        precio_detalle:
+          type: object
+          description: Solo aparece cuando la consulta incluye cliente_id
+          properties:
+            tipo_cliente: { type: string,  example: Preferencial }
+            cliente_id:   { type: integer, example: 1 }
+            origen:
+              type: string
+              enum: [precio_oferta, porcentaje_cliente, precio_base]
+              example: precio_oferta
+            descuento:    { type: number, format: float, example: 7000 }
+        creado_en:       { type: string, format: date-time }
+        actualizado_en:  { type: string, format: date-time }
+
+    CamisetaInput:
+      type: object
+      required: [titulo, club, pais, tipo, color, precio, codigo_producto]
+      properties:
+        titulo:          { type: string, maxLength: 200 }
+        club:            { type: string, maxLength: 120 }
+        pais:            { type: string, maxLength: 80 }
+        tipo:            { type: string, maxLength: 60, example: Local }
+        color:           { type: string, maxLength: 80 }
+        precio:          { type: number, format: float, minimum: 1 }
+        precio_oferta:   { type: number, format: float, nullable: true }
+        detalles:        { type: string, nullable: true }
+        codigo_producto: { type: string, maxLength: 40 }
+        cliente_id:      { type: integer, nullable: true }
+        tallas:
+          type: array
+          description: Asignacion opcional de tallas en la misma transaccion
+          items:
+            type: object
+            properties:
+              talla_id: { type: integer }
+              stock:    { type: integer }
+
+    CamisetaPatchInput:
+      type: object
+      description: Cualquier subconjunto de los campos de CamisetaInput
+      properties:
+        titulo:          { type: string }
+        club:            { type: string }
+        pais:            { type: string }
+        tipo:            { type: string }
+        color:           { type: string }
+        precio:          { type: number, format: float }
+        precio_oferta:   { type: number, format: float, nullable: true }
+        detalles:        { type: string, nullable: true }
+        codigo_producto: { type: string }
+        cliente_id:      { type: integer, nullable: true }
+
+    Cliente:
+      type: object
+      properties:
+        id:               { type: integer, example: 1 }
+        nombre_comercial: { type: string,  example: 90minutos }
+        rut:              { type: string,  example: "76.543.210-8" }
+        direccion:        { type: string,  example: "Providencia, Santiago" }
+        categoria:
+          type: string
+          enum: [Regular, Preferencial]
+          example: Preferencial
+        contacto:
+          type: object
+          properties:
+            nombre: { type: string, example: "Matias Herrera" }
+            email:  { type: string, format: email, example: "compras@90minutos.cl" }
+        porcentaje_oferta: { type: number, format: float, example: 10 }
+        creado_en:         { type: string, format: date-time }
+        actualizado_en:    { type: string, format: date-time }
+
+    ClienteInput:
+      type: object
+      required: [nombre_comercial, rut, direccion, contacto_nombre, contacto_email]
+      properties:
+        nombre_comercial:  { type: string, maxLength: 150 }
+        rut:               { type: string, maxLength: 20 }
+        direccion:         { type: string, maxLength: 200 }
+        categoria:
+          type: string
+          enum: [Regular, Preferencial]
+          default: Regular
+        contacto_nombre:   { type: string, maxLength: 150 }
+        contacto_email:    { type: string, format: email }
+        porcentaje_oferta: { type: number, format: float, minimum: 0, maximum: 100, default: 0 }
+
+    ClientePatchInput:
+      type: object
+      description: Cualquier subconjunto de los campos de ClienteInput
+      properties:
+        nombre_comercial:  { type: string }
+        rut:               { type: string }
+        direccion:         { type: string }
+        categoria:         { type: string, enum: [Regular, Preferencial] }
+        contacto_nombre:   { type: string }
+        contacto_email:    { type: string, format: email }
+        porcentaje_oferta: { type: number, format: float }
+
+    # ---------------- Envolturas de respuesta ----------------
+    Meta:
+      type: object
+      properties:
+        total:      { type: integer, example: 7 }
+        pagina:     { type: integer, example: 1 }
+        por_pagina: { type: integer, example: 10 }
+        paginas:    { type: integer, example: 1 }
+
+    CamisetaResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: success }
+        code:    { type: integer, example: 200 }
+        message: { type: string }
+        data:    { $ref: "#/components/schemas/Camiseta" }
+
+    CamisetaListResponse:
+      type: object
+      properties:
+        status: { type: string,  example: success }
+        code:   { type: integer, example: 200 }
+        total:  { type: integer, example: 7 }
+        meta:   { $ref: "#/components/schemas/Meta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Camiseta" }
+
+    CamisetasDeClienteResponse:
+      type: object
+      properties:
+        status: { type: string,  example: success }
+        code:   { type: integer, example: 200 }
+        cliente:
+          type: object
+          properties:
+            id:                { type: integer, example: 1 }
+            nombre_comercial:  { type: string,  example: 90minutos }
+            categoria:         { type: string,  example: Preferencial }
+            porcentaje_oferta: { type: number,  example: 10 }
+        total:  { type: integer, example: 3 }
+        meta:   { $ref: "#/components/schemas/Meta" }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Camiseta" }
+
+    ClienteResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: success }
+        code:    { type: integer, example: 200 }
+        message: { type: string }
+        data:    { $ref: "#/components/schemas/Cliente" }
+
+    ClienteListResponse:
+      type: object
+      properties:
+        status: { type: string,  example: success }
+        code:   { type: integer, example: 200 }
+        total:  { type: integer, example: 3 }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Cliente" }
+
+    TallaResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: success }
+        code:    { type: integer, example: 200 }
+        message: { type: string }
+        data:    { $ref: "#/components/schemas/Talla" }
+
+    TallaListResponse:
+      type: object
+      properties:
+        status: { type: string,  example: success }
+        code:   { type: integer, example: 200 }
+        total:  { type: integer, example: 6 }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Talla" }
+
+    TallaAsignadaResponse:
+      type: object
+      properties:
+        status:      { type: string,  example: success }
+        code:        { type: integer, example: 201 }
+        message:     { type: string }
+        camiseta_id: { type: integer, example: 1 }
+        data:        { $ref: "#/components/schemas/TallaAsignada" }
+
+    TallaAsignadaListResponse:
+      type: object
+      properties:
+        status:      { type: string,  example: success }
+        code:        { type: integer, example: 200 }
+        camiseta_id: { type: integer, example: 1 }
+        total:       { type: integer, example: 4 }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/TallaAsignada" }
+
+    MessageResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: success }
+        code:    { type: integer, example: 200 }
+        message: { type: string,  example: "Recurso eliminado correctamente." }
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: error }
+        code:    { type: integer, example: 404 }
+        message: { type: string,  example: "No existe una camiseta con el ID 999." }
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        status:  { type: string,  example: error }
+        code:    { type: integer, example: 422 }
+        message: { type: string,  example: "Los datos enviados no son validos." }
+        errors:
+          type: array
+          items: { type: string }
+          example:
+            - 'El campo "titulo" es obligatorio.'
+            - 'El campo "precio" debe ser un numero mayor que cero.'

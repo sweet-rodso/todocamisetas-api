@@ -1,0 +1,2091 @@
+{
+  "info": {
+    "name": "TodoCamisetas API - Examen Transversal Final",
+    "_postman_id": "todocamisetas-examen-final-2026",
+    "description": "Coleccion completa de la API RESTful de TodoCamisetas, desarrollada en PHP puro para el Examen Transversal Final de Desarrollo Backend (IF201IINF), Instituto Profesional San Sebastian.\n\nAutor: Rodrigo Alexis Soto Cifuentes\n\nAntes de usarla: inicie Apache y MySQL en XAMPP e importe database.sql.\n\nLa variable base_url apunta a http://localhost/todocamisetas-api/public\n\nREGLAS DE PRECIO FINAL:\n1. Cliente Preferencial + camiseta con precio_oferta -> precio_final = precio_oferta\n2. Cliente con porcentaje_oferta > 0 -> precio_final = precio - (precio * porcentaje / 100)\n3. Resto de los casos -> precio_final = precio base",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/todocamisetas-api/public",
+      "type": "string"
+    },
+    {
+      "key": "cliente_preferencial",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "cliente_regular",
+      "value": "2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Informacion de la API",
+      "item": [
+        {
+          "name": "Ver tabla de rutas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api"
+              ]
+            },
+            "description": "Endpoint de descubrimiento: devuelve la version y todas las rutas con su expresion regular."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "1. Camisetas (CRUD)",
+      "description": "CRUD completo del inventario. El endpoint show acepta ?cliente_id= para calcular el precio final.",
+      "item": [
+        {
+          "name": "Listar camisetas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas?pagina=1&por_pagina=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "por_pagina",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lista paginada del inventario. Filtros: club, tipo, cliente_id."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas?pagina=1&por_pagina=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas"
+                  ],
+                  "query": [
+                    {
+                      "key": "pagina",
+                      "value": "1"
+                    },
+                    {
+                      "key": "por_pagina",
+                      "value": "10"
+                    }
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"total\": 7,\n  \"meta\": {\n    \"total\": 7,\n    \"pagina\": 1,\n    \"por_pagina\": 10,\n    \"paginas\": 1\n  },\n  \"data\": [\n    {\n      \"id\": 1,\n      \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n      \"club\": \"Seleccion Chilena\",\n      \"pais\": \"Chile\",\n      \"tipo\": \"Local\",\n      \"color\": \"Rojo y Azul\",\n      \"precio\": 45000.0,\n      \"precio_oferta\": 38000.0,\n      \"precio_final\": 38000.0,\n      \"detalles\": \"Edicion aniversario 2025\",\n      \"codigo_producto\": \"SCL2025L\",\n      \"cliente\": {\n        \"id\": 1,\n        \"nombre\": \"90minutos\",\n        \"categoria\": \"Preferencial\"\n      },\n      \"tallas\": [\n        {\n          \"talla_id\": 2,\n          \"codigo\": \"M\",\n          \"descripcion\": \"Medium\",\n          \"stock\": 35,\n          \"creado_en\": \"2026-09-17 10:00:00\",\n          \"actualizado_en\": \"2026-09-17 10:00:00\"\n        }\n      ],\n      \"precio_detalle\": {\n        \"tipo_cliente\": \"Preferencial\",\n        \"cliente_id\": 1,\n        \"origen\": \"precio_oferta\",\n        \"descuento\": 7000.0\n      },\n      \"creado_en\": \"2026-09-17 10:00:00\",\n      \"actualizado_en\": \"2026-09-17 10:00:00\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Listar camisetas filtradas por club",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas?club=Colo Colo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas"
+              ],
+              "query": [
+                {
+                  "key": "club",
+                  "value": "Colo Colo"
+                }
+              ]
+            },
+            "description": "Filtra el inventario por club exacto."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar camisetas con precio para un cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas?cliente_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas"
+              ],
+              "query": [
+                {
+                  "key": "cliente_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Al enviar cliente_id, cada camiseta trae el precio_final de ese cliente."
+          },
+          "response": []
+        },
+        {
+          "name": "Ver camiseta (cliente Preferencial)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1?cliente_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "cliente_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Cliente 90minutos es Preferencial y la camiseta tiene precio_oferta: precio_final = precio_oferta."
+          },
+          "response": [
+            {
+              "name": "200 OK - precio de oferta aplicado",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1?cliente_id=1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "cliente_id",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n    \"club\": \"Seleccion Chilena\",\n    \"pais\": \"Chile\",\n    \"tipo\": \"Local\",\n    \"color\": \"Rojo y Azul\",\n    \"precio\": 45000.0,\n    \"precio_oferta\": 38000.0,\n    \"precio_final\": 38000.0,\n    \"detalles\": \"Edicion aniversario 2025\",\n    \"codigo_producto\": \"SCL2025L\",\n    \"cliente\": {\n      \"id\": 1,\n      \"nombre\": \"90minutos\",\n      \"categoria\": \"Preferencial\"\n    },\n    \"tallas\": [\n      {\n        \"talla_id\": 2,\n        \"codigo\": \"M\",\n        \"descripcion\": \"Medium\",\n        \"stock\": 35,\n        \"creado_en\": \"2026-09-17 10:00:00\",\n        \"actualizado_en\": \"2026-09-17 10:00:00\"\n      }\n    ],\n    \"precio_detalle\": {\n      \"tipo_cliente\": \"Preferencial\",\n      \"cliente_id\": 1,\n      \"origen\": \"precio_oferta\",\n      \"descuento\": 7000.0\n    },\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "999"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"No existe una camiseta con el ID 999.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Ver camiseta (cliente Regular)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1?cliente_id=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "cliente_id",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "Cliente tdeportes es Regular: precio_final = precio base."
+          },
+          "response": [
+            {
+              "name": "200 OK - precio base",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1?cliente_id=2",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1"
+                  ],
+                  "query": [
+                    {
+                      "key": "cliente_id",
+                      "value": "2"
+                    }
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n    \"club\": \"Seleccion Chilena\",\n    \"pais\": \"Chile\",\n    \"tipo\": \"Local\",\n    \"color\": \"Rojo y Azul\",\n    \"precio\": 45000.0,\n    \"precio_oferta\": 38000.0,\n    \"precio_final\": 45000.0,\n    \"detalles\": \"Edicion aniversario 2025\",\n    \"codigo_producto\": \"SCL2025L\",\n    \"cliente\": {\n      \"id\": 1,\n      \"nombre\": \"90minutos\",\n      \"categoria\": \"Preferencial\"\n    },\n    \"tallas\": [\n      {\n        \"talla_id\": 2,\n        \"codigo\": \"M\",\n        \"descripcion\": \"Medium\",\n        \"stock\": 35,\n        \"creado_en\": \"2026-09-17 10:00:00\",\n        \"actualizado_en\": \"2026-09-17 10:00:00\"\n      }\n    ],\n    \"precio_detalle\": {\n      \"tipo_cliente\": \"Regular\",\n      \"cliente_id\": 2,\n      \"origen\": \"precio_base\",\n      \"descuento\": 0.0\n    },\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Crear camiseta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas"
+              ]
+            },
+            "description": "Crea el producto y asigna sus tallas en la misma transaccion.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Camiseta Local 2025 - Audax Italiano\",\n  \"club\": \"Audax Italiano\",\n  \"pais\": \"Chile\",\n  \"tipo\": \"Local\",\n  \"color\": \"Verde y Blanco\",\n  \"precio\": 39000,\n  \"precio_oferta\": 33000,\n  \"detalles\": \"Modelo oficial temporada 2025\",\n  \"codigo_producto\": \"AUD2025L\",\n  \"cliente_id\": 2,\n  \"tallas\": [\n    {\n      \"talla_id\": 2,\n      \"stock\": 20\n    },\n    {\n      \"talla_id\": 3,\n      \"stock\": 15\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Camiseta Local 2025 - Audax Italiano\",\n  \"club\": \"Audax Italiano\",\n  \"pais\": \"Chile\",\n  \"tipo\": \"Local\",\n  \"color\": \"Verde y Blanco\",\n  \"precio\": 39000,\n  \"precio_oferta\": 33000,\n  \"detalles\": \"Modelo oficial temporada 2025\",\n  \"codigo_producto\": \"AUD2025L\",\n  \"cliente_id\": 2,\n  \"tallas\": [\n    {\n      \"talla_id\": 2,\n      \"stock\": 20\n    },\n    {\n      \"talla_id\": 3,\n      \"stock\": 15\n    }\n  ]\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 201,\n  \"message\": \"Camiseta creada correctamente.\",\n  \"data\": {\n    \"id\": 8,\n    \"titulo\": \"Camiseta Local 2025 - Audax Italiano\",\n    \"club\": \"Seleccion Chilena\",\n    \"pais\": \"Chile\",\n    \"tipo\": \"Local\",\n    \"color\": \"Rojo y Azul\",\n    \"precio\": 39000.0,\n    \"precio_oferta\": 33000.0,\n    \"precio_final\": 39000.0,\n    \"detalles\": \"Edicion aniversario 2025\",\n    \"codigo_producto\": \"AUD2025L\",\n    \"cliente\": {\n      \"id\": 1,\n      \"nombre\": \"90minutos\",\n      \"categoria\": \"Preferencial\"\n    },\n    \"tallas\": [\n      {\n        \"talla_id\": 2,\n        \"codigo\": \"M\",\n        \"descripcion\": \"Medium\",\n        \"stock\": 35,\n        \"creado_en\": \"2026-09-17 10:00:00\",\n        \"actualizado_en\": \"2026-09-17 10:00:00\"\n      }\n    ],\n    \"precio_detalle\": {\n      \"tipo_cliente\": \"Preferencial\",\n      \"cliente_id\": 1,\n      \"origen\": \"precio_oferta\",\n      \"descuento\": 7000.0\n    },\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 Validacion",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"club\": \"Colo Colo\"\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 422,\n  \"message\": \"Los datos enviados no son validos.\",\n  \"errors\": [\n    \"El campo \\\"titulo\\\" es obligatorio.\",\n    \"El campo \\\"precio\\\" debe ser un numero mayor que cero.\"\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 Codigo duplicado",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Camiseta Local 2025 - Audax Italiano\",\n  \"club\": \"Audax Italiano\",\n  \"pais\": \"Chile\",\n  \"tipo\": \"Local\",\n  \"color\": \"Verde y Blanco\",\n  \"precio\": 39000,\n  \"precio_oferta\": 33000,\n  \"detalles\": \"Modelo oficial temporada 2025\",\n  \"codigo_producto\": \"SCL2025L\",\n  \"cliente_id\": 2,\n  \"tallas\": [\n    {\n      \"talla_id\": 2,\n      \"stock\": 20\n    },\n    {\n      \"talla_id\": 3,\n      \"stock\": 15\n    }\n  ]\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 409,\n  \"message\": \"El codigo de producto SCL2025L ya esta en uso.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar camiseta (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "8"
+              ]
+            },
+            "description": "Reemplaza todos los campos del producto.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Camiseta Local 2025 - Audax Italiano\",\n  \"club\": \"Audax Italiano\",\n  \"pais\": \"Chile\",\n  \"tipo\": \"Local\",\n  \"color\": \"Verde y Blanco\",\n  \"precio\": 41000,\n  \"precio_oferta\": 33000,\n  \"detalles\": \"Modelo oficial temporada 2025\",\n  \"codigo_producto\": \"AUD2025L\",\n  \"cliente_id\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/8",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "8"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Camiseta actualizada correctamente.\",\n  \"data\": {\n    \"id\": 8,\n    \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n    \"club\": \"Seleccion Chilena\",\n    \"pais\": \"Chile\",\n    \"tipo\": \"Local\",\n    \"color\": \"Rojo y Azul\",\n    \"precio\": 41000.0,\n    \"precio_oferta\": 38000.0,\n    \"precio_final\": 38000.0,\n    \"detalles\": \"Edicion aniversario 2025\",\n    \"codigo_producto\": \"SCL2025L\",\n    \"cliente\": {\n      \"id\": 1,\n      \"nombre\": \"90minutos\",\n      \"categoria\": \"Preferencial\"\n    },\n    \"tallas\": [\n      {\n        \"talla_id\": 2,\n        \"codigo\": \"M\",\n        \"descripcion\": \"Medium\",\n        \"stock\": 35,\n        \"creado_en\": \"2026-09-17 10:00:00\",\n        \"actualizado_en\": \"2026-09-17 10:00:00\"\n      }\n    ],\n    \"precio_detalle\": {\n      \"tipo_cliente\": \"Preferencial\",\n      \"cliente_id\": 1,\n      \"origen\": \"precio_oferta\",\n      \"descuento\": 7000.0\n    },\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar camiseta (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "8"
+              ]
+            },
+            "description": "Modifica solo los campos enviados. Aqui se cambia unicamente el precio de oferta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precio_oferta\": 35000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/8",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "8"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"precio_oferta\": 35000\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Camiseta actualizada correctamente.\",\n  \"data\": {\n    \"id\": 8,\n    \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n    \"club\": \"Seleccion Chilena\",\n    \"pais\": \"Chile\",\n    \"tipo\": \"Local\",\n    \"color\": \"Rojo y Azul\",\n    \"precio\": 45000.0,\n    \"precio_oferta\": 35000.0,\n    \"precio_final\": 38000.0,\n    \"detalles\": \"Edicion aniversario 2025\",\n    \"codigo_producto\": \"SCL2025L\",\n    \"cliente\": {\n      \"id\": 1,\n      \"nombre\": \"90minutos\",\n      \"categoria\": \"Preferencial\"\n    },\n    \"tallas\": [\n      {\n        \"talla_id\": 2,\n        \"codigo\": \"M\",\n        \"descripcion\": \"Medium\",\n        \"stock\": 35,\n        \"creado_en\": \"2026-09-17 10:00:00\",\n        \"actualizado_en\": \"2026-09-17 10:00:00\"\n      }\n    ],\n    \"precio_detalle\": {\n      \"tipo_cliente\": \"Preferencial\",\n      \"cliente_id\": 1,\n      \"origen\": \"precio_oferta\",\n      \"descuento\": 7000.0\n    },\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar camiseta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "8"
+              ]
+            },
+            "description": "Elimina el producto. Sus tallas se borran en cascada."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/8",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "8"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Camiseta con ID 8 eliminada correctamente.\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/8",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "8"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"No existe una camiseta con el ID 8.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Error: ID no numerico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "abc"
+              ]
+            },
+            "description": "La expresion regular exige \\d+, por lo que la ruta no calza y se devuelve 404."
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/abc",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "abc"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"La ruta GET /api/camisetas/abc no existe en esta API.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Clientes (CRUD)",
+      "description": "CRUD de tiendas minoristas B2B, incluida la validacion que impide borrar clientes con camisetas.",
+      "item": [
+        {
+          "name": "Listar clientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            },
+            "description": "Lista todos los clientes B2B."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"total\": 3,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nombre_comercial\": \"90minutos\",\n      \"rut\": \"76.543.210-8\",\n      \"direccion\": \"Providencia, Santiago\",\n      \"categoria\": \"Preferencial\",\n      \"contacto\": {\n        \"nombre\": \"Matias Herrera\",\n        \"email\": \"compras@90minutos.cl\"\n      },\n      \"porcentaje_oferta\": 10.0,\n      \"creado_en\": \"2026-09-17 10:00:00\",\n      \"actualizado_en\": \"2026-09-17 10:00:00\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Listar clientes Preferenciales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes?categoria=Preferencial",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "Preferencial"
+                }
+              ]
+            },
+            "description": "Filtra por categoria (tipo) de cliente."
+          },
+          "response": []
+        },
+        {
+          "name": "Ver cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "1"
+              ]
+            },
+            "description": "Obtiene un cliente por su identificador."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "1"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"data\": {\n    \"id\": 1,\n    \"nombre_comercial\": \"90minutos\",\n    \"rut\": \"76.543.210-8\",\n    \"direccion\": \"Providencia, Santiago\",\n    \"categoria\": \"Preferencial\",\n    \"contacto\": {\n      \"nombre\": \"Matias Herrera\",\n      \"email\": \"compras@90minutos.cl\"\n    },\n    \"porcentaje_oferta\": 10.0,\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/999",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "999"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"No existe un cliente con el ID 999.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Listar camisetas de un cliente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/1/camisetas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "1",
+                "camisetas"
+              ]
+            },
+            "description": "Devuelve el catalogo asignado al cliente con el precio final que le corresponde."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/1/camisetas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "1",
+                    "camisetas"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"cliente\": {\n    \"id\": 1,\n    \"nombre_comercial\": \"90minutos\",\n    \"categoria\": \"Preferencial\",\n    \"porcentaje_oferta\": 10.0\n  },\n  \"total\": 3,\n  \"meta\": {\n    \"total\": 3,\n    \"pagina\": 1,\n    \"por_pagina\": 10,\n    \"paginas\": 1\n  },\n  \"data\": [\n    {\n      \"id\": 1,\n      \"titulo\": \"Camiseta Local 2025 - Seleccion Chilena\",\n      \"club\": \"Seleccion Chilena\",\n      \"pais\": \"Chile\",\n      \"tipo\": \"Local\",\n      \"color\": \"Rojo y Azul\",\n      \"precio\": 45000.0,\n      \"precio_oferta\": 38000.0,\n      \"precio_final\": 38000.0,\n      \"detalles\": \"Edicion aniversario 2025\",\n      \"codigo_producto\": \"SCL2025L\",\n      \"cliente\": {\n        \"id\": 1,\n        \"nombre\": \"90minutos\",\n        \"categoria\": \"Preferencial\"\n      },\n      \"tallas\": [\n        {\n          \"talla_id\": 2,\n          \"codigo\": \"M\",\n          \"descripcion\": \"Medium\",\n          \"stock\": 35,\n          \"creado_en\": \"2026-09-17 10:00:00\",\n          \"actualizado_en\": \"2026-09-17 10:00:00\"\n        }\n      ],\n      \"precio_detalle\": {\n        \"tipo_cliente\": \"Preferencial\",\n        \"cliente_id\": 1,\n        \"origen\": \"precio_oferta\",\n        \"descuento\": 7000.0\n      },\n      \"creado_en\": \"2026-09-17 10:00:00\",\n      \"actualizado_en\": \"2026-09-17 10:00:00\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Crear cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/clientes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes"
+              ]
+            },
+            "description": "Registra una nueva tienda minorista.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_comercial\": \"Deportes Sur\",\n  \"rut\": \"79.456.123-7\",\n  \"direccion\": \"Puerto Montt, Los Lagos\",\n  \"categoria\": \"Preferencial\",\n  \"contacto_nombre\": \"Paula Mendez\",\n  \"contacto_email\": \"compras@deportessur.cl\",\n  \"porcentaje_oferta\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre_comercial\": \"Deportes Sur\",\n  \"rut\": \"79.456.123-7\",\n  \"direccion\": \"Puerto Montt, Los Lagos\",\n  \"categoria\": \"Preferencial\",\n  \"contacto_nombre\": \"Paula Mendez\",\n  \"contacto_email\": \"compras@deportessur.cl\",\n  \"porcentaje_oferta\": 12\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 201,\n  \"message\": \"Cliente creado correctamente.\",\n  \"data\": {\n    \"id\": 4,\n    \"nombre_comercial\": \"Deportes Sur\",\n    \"rut\": \"79.456.123-7\",\n    \"direccion\": \"Providencia, Santiago\",\n    \"categoria\": \"Preferencial\",\n    \"contacto\": {\n      \"nombre\": \"Matias Herrera\",\n      \"email\": \"compras@90minutos.cl\"\n    },\n    \"porcentaje_oferta\": 12.0,\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 Validacion",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"contacto_email\": \"correo-malo\"\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 422,\n  \"message\": \"Los datos enviados no son validos.\",\n  \"errors\": [\n    \"El campo \\\"nombre_comercial\\\" es obligatorio.\",\n    \"El campo \\\"contacto_email\\\" debe ser un correo electronico valido.\"\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 RUT duplicado",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre_comercial\": \"Deportes Sur\",\n  \"rut\": \"76.543.210-8\",\n  \"direccion\": \"Puerto Montt, Los Lagos\",\n  \"categoria\": \"Preferencial\",\n  \"contacto_nombre\": \"Paula Mendez\",\n  \"contacto_email\": \"compras@deportessur.cl\",\n  \"porcentaje_oferta\": 12\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 409,\n  \"message\": \"El RUT 76.543.210-8 ya esta registrado por otro cliente.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar cliente (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "4"
+              ]
+            },
+            "description": "Reemplaza todos los campos del cliente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_comercial\": \"Deportes Sur\",\n  \"rut\": \"79.456.123-7\",\n  \"direccion\": \"Puerto Montt, Los Lagos\",\n  \"categoria\": \"Preferencial\",\n  \"contacto_nombre\": \"Paula Mendez\",\n  \"contacto_email\": \"compras@deportessur.cl\",\n  \"porcentaje_oferta\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar cliente (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "4"
+              ]
+            },
+            "description": "Modifica solo el porcentaje de oferta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"porcentaje_oferta\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/4",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "4"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"porcentaje_oferta\": 20\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Cliente actualizado correctamente.\",\n  \"data\": {\n    \"id\": 4,\n    \"nombre_comercial\": \"90minutos\",\n    \"rut\": \"76.543.210-8\",\n    \"direccion\": \"Providencia, Santiago\",\n    \"categoria\": \"Preferencial\",\n    \"contacto\": {\n      \"nombre\": \"Matias Herrera\",\n      \"email\": \"compras@90minutos.cl\"\n    },\n    \"porcentaje_oferta\": 20.0,\n    \"creado_en\": \"2026-09-17 10:00:00\",\n    \"actualizado_en\": \"2026-09-17 10:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cliente sin camisetas",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "4"
+              ]
+            },
+            "description": "Elimina correctamente porque el cliente no tiene productos asignados."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/4",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "4"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Cliente con ID 4 eliminado correctamente.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Error: eliminar cliente CON camisetas",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/clientes/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "clientes",
+                "1"
+              ]
+            },
+            "description": "Regla de negocio: no se permite eliminar un cliente que tiene camisetas asignadas."
+          },
+          "response": [
+            {
+              "name": "409 Conflict",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/clientes/1",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clientes",
+                    "1"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 409,\n  \"message\": \"No se puede eliminar el cliente porque tiene 3 camiseta(s) asignada(s). Reasigne o elimine primero esos productos.\",\n  \"camisetas_asociadas\": 3\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Tallas (catalogo)",
+      "description": "CRUD del catalogo de tallas.",
+      "item": [
+        {
+          "name": "Listar tallas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tallas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas"
+              ]
+            },
+            "description": "Catalogo completo de tallas."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "tallas"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"total\": 6,\n  \"data\": [\n    {\n      \"id\": 2,\n      \"codigo\": \"M\",\n      \"descripcion\": \"Medium\",\n      \"creado_en\": \"2026-09-17 10:00:00\",\n      \"actualizado_en\": \"2026-09-17 10:00:00\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Ver talla",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tallas/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas",
+                "2"
+              ]
+            },
+            "description": "Obtiene una talla del catalogo."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear talla",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tallas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas"
+              ]
+            },
+            "description": "Agrega una talla al catalogo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"XS\",\n  \"descripcion\": \"Extra Small\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"codigo\": \"XS\",\n  \"descripcion\": \"Extra Small\"\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 201,\n  \"message\": \"Talla creada correctamente.\",\n  \"data\": {\n    \"id\": 7,\n    \"codigo\": \"XS\",\n    \"descripcion\": \"Extra Small\",\n    \"creado_en\": \"2026-09-17 12:00:00\",\n    \"actualizado_en\": \"2026-09-17 12:00:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 Codigo duplicado",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"codigo\": \"M\",\n  \"descripcion\": \"Medium\"\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 409,\n  \"message\": \"Ya existe una talla con el codigo M.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar talla (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tallas/7",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas",
+                "7"
+              ]
+            },
+            "description": "Actualiza codigo y descripcion.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"XS\",\n  \"descripcion\": \"Extra Small (ajustado)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar talla (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/tallas/7",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas",
+                "7"
+              ]
+            },
+            "description": "Modifica solo la descripcion.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Talla extra pequena\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar talla",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tallas/7",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tallas",
+                "7"
+              ]
+            },
+            "description": "Elimina la talla y en cascada todas sus asignaciones a camisetas."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/tallas/7",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "tallas",
+                    "7"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Talla con ID 7 eliminada correctamente.\",\n  \"asignaciones_liberadas\": 0\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Camiseta-Tallas (relacion muchos a muchos)",
+      "description": "Gestion de la tabla pivote camiseta_tallas: asignar tallas a una camiseta y controlar su stock.",
+      "item": [
+        {
+          "name": "Listar tallas de una camiseta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1/tallas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1",
+                "tallas"
+              ]
+            },
+            "description": "Devuelve las tallas asignadas a la camiseta con su stock."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"camiseta_id\": 1,\n  \"total\": 4,\n  \"data\": [\n    {\n      \"talla_id\": 2,\n      \"codigo\": \"M\",\n      \"descripcion\": \"Medium\",\n      \"stock\": 35,\n      \"creado_en\": \"2026-09-17 10:00:00\",\n      \"actualizado_en\": \"2026-09-17 10:00:00\"\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Camiseta inexistente",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/999/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "999",
+                    "tallas"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"No existe una camiseta con el ID 999.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Asignar talla a camiseta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1/tallas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1",
+                "tallas"
+              ]
+            },
+            "description": "Crea una fila en camiseta_tallas con el stock inicial.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"talla_id\": 5,\n  \"stock\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"talla_id\": 5,\n  \"stock\": 25\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 201,\n  \"message\": \"Talla asignada correctamente a la camiseta.\",\n  \"camiseta_id\": 1,\n  \"data\": {\n    \"talla_id\": 5,\n    \"codigo\": \"XXL\",\n    \"descripcion\": \"Doble Extra Large\",\n    \"stock\": 25,\n    \"creado_en\": \"2026-09-17 12:05:00\",\n    \"actualizado_en\": \"2026-09-17 12:05:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "409 Ya asignada",
+              "status": "Conflict",
+              "code": 409,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"talla_id\": 2,\n  \"stock\": 10\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 409,\n  \"message\": \"La talla 2 ya esta asignada a la camiseta 1. Use PUT para modificar su stock.\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Talla inexistente",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"talla_id\": 99,\n  \"stock\": 5\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"No existe una talla con el ID 99 en el catalogo.\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 Falta talla_id",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"stock\": 10\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 422,\n  \"message\": \"Los datos enviados no son validos.\",\n  \"errors\": [\n    \"El campo \\\"talla_id\\\" es obligatorio y debe ser un numero entero positivo.\"\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar stock (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1",
+                "tallas",
+                "5"
+              ]
+            },
+            "description": "Modifica el stock de esa talla en esa camiseta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 40\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas",
+                    "5"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"stock\": 40\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Stock actualizado correctamente.\",\n  \"camiseta_id\": 1,\n  \"data\": {\n    \"talla_id\": 5,\n    \"codigo\": \"XXL\",\n    \"descripcion\": \"Doble Extra Large\",\n    \"stock\": 40,\n    \"creado_en\": \"2026-09-17 12:05:00\",\n    \"actualizado_en\": \"2026-09-17 12:10:00\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "404 Relacion inexistente",
+              "status": "Not Found",
+              "code": 404,
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas/6",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas",
+                    "6"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"stock\": 10\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 404,\n  \"message\": \"La camiseta 1 no tiene asignada la talla 6.\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "422 Stock invalido",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas",
+                    "5"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"stock\": -5\n}"
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"code\": 422,\n  \"message\": \"Los datos enviados no son validos.\",\n  \"errors\": [\n    \"El campo \\\"stock\\\" debe ser un numero entero mayor o igual a cero.\"\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Actualizar stock (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1",
+                "tallas",
+                "5"
+              ]
+            },
+            "description": "Equivalente a PUT para este recurso, ya que solo existe el campo stock.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Quitar talla de camiseta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "camisetas",
+                "1",
+                "tallas",
+                "5"
+              ]
+            },
+            "description": "Elimina la fila de camiseta_tallas sin afectar el catalogo de tallas."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/camisetas/1/tallas/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "camisetas",
+                    "1",
+                    "tallas",
+                    "5"
+                  ]
+                }
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=UTF-8"
+                }
+              ],
+              "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"message\": \"Talla 5 desasignada de la camiseta 1.\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
